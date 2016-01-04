@@ -4,10 +4,20 @@ require 'minitest'
 require 'server'
 
 class ServerTest < Minitest::Test
-  def test_listens_to_port_9292
-    response = Hurley.get("http://127.0.0.1:9292")
-    assert_equal response.body, "<http><head></head><body>Hello, World! (6)</body></html>"
+  attr_reader :hclient
+  def setup
+    @hclient = Hurley::Client.new "http://127.0.0.1:9292"
   end
 
-  
+  def test_returns_calling_the_correct_host
+    response = hclient.get("/")
+    assert_equal response.header[:server], "ruby"
+  end
+
+  def test_responds_to_different_paths
+    response = hclient.get("/")
+    assert_equal hclient.port, 9292
+  end
+
+
 end
