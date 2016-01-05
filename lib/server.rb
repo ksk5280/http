@@ -1,16 +1,19 @@
 require 'socket'
 require 'hurley'
+require 'pry'
 
 class Server
   attr_reader :tcp_server,
               :client,
               :request_count,
               :request_lines,
-              :request_details
+              :request_details,
+              :hello_count
 
   def initialize
     @tcp_server = TCPServer.new(9292)
     @request_count = 0
+    @hello_count = 0
   end
 
   def accept_request
@@ -20,31 +23,32 @@ class Server
     while line = client.gets and !line.chomp.empty?
       request_lines << line.chomp
     end
+    @request_count += 1
+
     puts "Got this request:"
     puts request_lines.inspect
-    require 'pry'
-    binding.pry
-    @request_count += 1
+
+    parse_request
     send_response
     client.close
   end
 
   def send_response
 
-    #parse the request lines
-    # response = "<pre>" + request_lines.join("\n") + "</pre>"
-
-    #parse the path
-    path = request_lines[0].split[1]
-    puts path
-    #generate the response string
-    #send_this output
-    # response = "<pre>" + request_lines.join("\n") + "</pre>"
-    response = "Hello, World! (#{request_count})"
+    if get_path == '/hello'
+      @hello_count += 1
+      response = "Hello, World! (#{hello_count})"
+    else
+      response = generate_diagnostic
+    end
 
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
+  end
+
+  def get_path
+    request_lines[0].split[1]
   end
 
   def headers(output)
@@ -60,10 +64,34 @@ class Server
     request_details["Verb"] = request_lines[0].split[0]
     request_details["Path"] = request_lines[0].split[1]
     request_details["Protocol"] = request_lines[0].split[2]
-    request_details["Host"] = request_lines[1].split(":")[1]
-    request_details["Port"] = request_lines[1].split(":")[2]
-    request_details["Origin"] = "I have no idea"
-    request_details["Accept"] = ""
+    request_details["Host"] = get_host
+    request_details["Port"] = get_port
+    request_details["Origin"] = get_host
+    request_details["Accept"] = get_accept
+  end
+
+  def get_host
+    request_lines.find { |line| line.start_with?('Host') }.split[1].split(':')[0]
+  end
+
+  def get_port
+    request_lines.find { |line| line.start_with?('Host') }.split(":")[2]
+  end
+
+  def get_accept
+    request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
+  end
+
+  def generate_diagnostic
+    diagnostic = "<pre>\n"
+    diagnostic += "Verb: #{request_details['Verb']}\n"
+    diagnostic += "Path: #{request_details['Path']}\n"
+    diagnostic += "Protocol: #{request_details['Protocol']}\n"
+    diagnostic += "Host: #{request_details['Host']}\n"
+    diagnostic += "Port: #{request_details['Port']}\n"
+    diagnostic += "Origin: #{request_details['Origin']}\n"
+    diagnostic += "Accept: #{request_details['Accept']}\n"
+    diagnostic += '</pre>'
   end
 end
 
@@ -72,4 +100,5 @@ if __FILE__ == $0
   loop do
     serve.accept_request
   end
+
 end
