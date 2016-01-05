@@ -27,7 +27,8 @@ class Server
     puts path
     #generate the response string
     #send_this output
-    response = "<pre>" + request_lines.join("\n") + "</pre>"
+    # response = "<pre>" + request_lines.join("\n") + "</pre>"
+    response = "Hello, World! (#{request_count})"
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
