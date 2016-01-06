@@ -3,7 +3,7 @@ class PathResponse
 
   def path_finder(path, data_in)
     @data = data_in
-    if path == '/'
+    if path == '/' || path == '/favicon.ico'
       data[:diagnostics]
     else
       response_method = path[1..-1].to_sym

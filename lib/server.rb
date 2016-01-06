@@ -34,8 +34,8 @@ class Server
     get_request_lines
     parser.set_request(request_lines)
     print_request
-    send_response
     increment_counters
+    send_response
     set_shutdown
     client.close
   end
