@@ -1,6 +1,7 @@
 require 'socket'
 require 'hurley'
 require 'pry'
+require_relative 'parser'
 
 class Server
   attr_reader :tcp_server,
@@ -8,14 +9,15 @@ class Server
               :shutdown,
               :request_count,
               :request_lines,
-              :request_details,
-              :hello_count
+              :hello_count,
+              :parser
 
   def initialize
     @tcp_server = TCPServer.new(9292)
     @request_count = 0
     @hello_count = 0
     @shutdown = false
+    @parser = Parser.new
   end
 
   def run
@@ -32,29 +34,29 @@ class Server
       request_lines << line.chomp
     end
 
+    parser.set_request(request_lines)
+
     puts "Got this request:"
     puts request_lines.inspect
 
-    parse_request
     send_response
 
-    @request_count += 1 unless request_details['Path'] == '/favicon.ico'
+    @request_count += 1 unless parser.path == '/favicon.ico'
 
     client.close
   end
 
   def send_response
-    # path = request_details['Path']
-    # binding.pry
-    if path == '/hello'
+    if parser.path == '/hello'
       @hello_count += 1
       response = "Hello, World! (#{hello_count})"
-    elsif path == '/datetime'
+    elsif parser.path == '/datetime'
       response = DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-    elsif path == '/request'
+    elsif parser.path == '/request'
       response = "Total Requests: #{request_count}"
-    elsif path == '/shutdown'
+    elsif parser.path == '/shutdown'
       response = "Total Requests: #{request_count}"
+      @shutdown = parser.path == '/shutdown'
     else
       response = generate_diagnostic
     end
@@ -72,47 +74,43 @@ class Server
       "content-length: #{output.length}\r\n\r\n"].join("\r\n")
   end
 
-  def parse_request
-    @request_details = {}
+  # def verb
+  #   request_lines[0].split[0]
+  # end
 
-    # request_details["Path"] = request_lines[0].split[1]
-    request_details["Protocol"] = request_lines[0].split[2]
-    request_details["Host"] = get_host
-    request_details["Port"] = get_port
-    request_details["Origin"] = get_host
-    request_details["Accept"] = get_accept
-    @shutdown = request_details['Path'] == '/shutdown'
+  # def parser.path
+  #   request_lines[0].split[1]
+  # end
+
+  def protocol
+    request_lines[0].split[2]
   end
 
-  def verb
-    request_lines[0].split[0]
-  end
-
-  def path
-    request_lines[0].split[1]
-  end
-
-  def get_host
+  def host
     request_lines.find { |line| line.start_with?('Host') }.split[1].split(':')[0]
   end
 
-  def get_port
+  def port
     request_lines.find { |line| line.start_with?('Host') }.split(":")[2]
   end
 
-  def get_accept
+  def origin
+    host
+  end
+
+  def accept
     request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
   end
 
   def generate_diagnostic
     "<pre>\n" \
-    "Verb: #{verb}\n" \
-    "Path: #{path}\n" \
-    "Protocol: #{request_details['Protocol']}\n" \
-    "Host: #{request_details['Host']}\n" \
-    "Port: #{request_details['Port']}\n" \
-    "Origin: #{request_details['Origin']}\n" \
-    "Accept: #{request_details['Accept']}\n" \
+    "Verb: #{parser.verb}\n" \
+    "Path: #{parser.path}\n" \
+    "Protocol: #{protocol}\n" \
+    "Host: #{host}\n" \
+    "Port: #{port}\n" \
+    "Origin: #{origin}\n" \
+    "Accept: #{accept}\n" \
     '</pre>'
   end
 end
