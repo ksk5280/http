@@ -67,9 +67,20 @@ class Server
     elsif path == '/shutdown'
       @shutdown = path == '/shutdown'
       "Total Requests: #{request_count}"
+    elsif path == '/word_search'
+      word = parser.word
+      if dictionary.include?(word)
+        "#{word} is a known word"
+      else
+        "#{word} is not a known word"
+      end
     else
       generate_diagnostic
     end
+  end
+
+  def dictionary
+    File.read('/usr/share/dict/words').split("\n")
   end
 
   def path

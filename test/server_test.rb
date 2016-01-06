@@ -58,6 +58,18 @@ class ServerTest < Minitest::Test
     assert_equal d, response.body
   end
 
+  def test_word_search_can_check_known_words
+    response = hclient.get("/word_search?word=hello&word2=world")
+
+    assert_equal "<http><head></head><body>hello is a known word</body></html>", response.body
+  end
+
+  def test_word_search_can_check_unknown_words
+    response = hclient.get("/word_search?word=pizz")
+
+    assert_equal "<http><head></head><body>pizz is not a known word</body></html>", response.body
+  end
+
   # def test_shutdown_return_total_number_of_requests_and_closes_server
   #
   #   response = hclient.get('/request')

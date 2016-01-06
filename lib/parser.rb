@@ -1,12 +1,20 @@
 class Parser
   attr_reader :request_lines
 
+  def set_request(request_lines)
+    @request_lines = request_lines
+  end
+
   def verb
     request_lines[0].split[0]
   end
 
   def path
-    request_lines[0].split[1]
+    request_lines[0].split[1].split('?')[0]
+  end
+
+  def word
+    request_lines[0].match(/=\w+/)[0][1..-1]
   end
 
   def protocol
@@ -41,8 +49,5 @@ class Parser
     '</pre>'
   end
 
-  def set_request(request_lines)
-    @request_lines = request_lines
-  end
 
 end
