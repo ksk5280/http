@@ -32,15 +32,15 @@ class ResponseGenerator
 
   def diagnostics_response
     request_details = data[:request_details]
-    diagnostic = "<pre>\n"
-    diagnostic += "Verb: #{request_details['Verb']}\n"
-    diagnostic += "Path: #{request_details['Path']}\n"
-    diagnostic += "Protocol: #{request_details['Protocol']}\n"
-    diagnostic += "Host: #{request_details['Host']}\n"
-    diagnostic += "Port: #{request_details['Port']}\n"
-    diagnostic += "Origin: #{request_details['Origin']}\n"
-    diagnostic += "Accept: #{request_details['Accept']}\n"
-    diagnostic += '</pre>'
+    "<pre>\n" \
+    "Verb: #{request_details['Verb']}\n" \
+    "Path: #{request_details['Path']}\n" \
+    "Protocol: #{request_details['Protocol']}\n" \
+    "Host: #{request_details['Host']}\n" \
+    "Port: #{request_details['Port']}\n" \
+    "Origin: #{request_details['Origin']}\n" \
+    "Accept: #{request_details['Accept']}\n" \
+    '</pre>'
   end
 
 end
