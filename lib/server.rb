@@ -44,8 +44,8 @@ class Server
   end
 
   def send_response
-    path = request_details['Path']
-
+    # path = request_details['Path']
+    # binding.pry
     if path == '/hello'
       @hello_count += 1
       response = "Hello, World! (#{hello_count})"
@@ -74,14 +74,22 @@ class Server
 
   def parse_request
     @request_details = {}
-    request_details["Verb"] = request_lines[0].split[0]
-    request_details["Path"] = request_lines[0].split[1]
+
+    # request_details["Path"] = request_lines[0].split[1]
     request_details["Protocol"] = request_lines[0].split[2]
     request_details["Host"] = get_host
     request_details["Port"] = get_port
     request_details["Origin"] = get_host
     request_details["Accept"] = get_accept
     @shutdown = request_details['Path'] == '/shutdown'
+  end
+
+  def verb
+    request_lines[0].split[0]
+  end
+
+  def path
+    request_lines[0].split[1]
   end
 
   def get_host
@@ -97,15 +105,15 @@ class Server
   end
 
   def generate_diagnostic
-    diagnostic = "<pre>\n"
-    diagnostic += "Verb: #{request_details['Verb']}\n"
-    diagnostic += "Path: #{request_details['Path']}\n"
-    diagnostic += "Protocol: #{request_details['Protocol']}\n"
-    diagnostic += "Host: #{request_details['Host']}\n"
-    diagnostic += "Port: #{request_details['Port']}\n"
-    diagnostic += "Origin: #{request_details['Origin']}\n"
-    diagnostic += "Accept: #{request_details['Accept']}\n"
-    diagnostic += '</pre>'
+    "<pre>\n" \
+    "Verb: #{verb}\n" \
+    "Path: #{path}\n" \
+    "Protocol: #{request_details['Protocol']}\n" \
+    "Host: #{request_details['Host']}\n" \
+    "Port: #{request_details['Port']}\n" \
+    "Origin: #{request_details['Origin']}\n" \
+    "Accept: #{request_details['Accept']}\n" \
+    '</pre>'
   end
 end
 
