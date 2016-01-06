@@ -18,7 +18,7 @@ class Server
   def run
     loop do
       process_request
-      break if get_path == '/shutdown'
+      break if shutdown?
     end
   end
 
@@ -44,6 +44,7 @@ class Server
     puts "Got this request:"
     puts request_lines.inspect
   end
+
   def send_response
     if get_path == '/hello'
       @hello_count += 1
@@ -61,6 +62,10 @@ class Server
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
+  end
+
+  def shutdown?
+    get_path == '/shutdown'
   end
 
   def get_path
