@@ -4,6 +4,7 @@ require 'socket'
 require 'pry'
 
 class Server
+  #include Parser
   attr_reader :tcp_server,
               :client,
               :request_count,
@@ -15,7 +16,6 @@ class Server
 
   def initialize
     @tcp_server = TCPServer.new(9292)
-    @parser = Parser.new
     @response_gen = ResponseGenerator.new
     @request_count = 0
     @hello_count = 0
@@ -53,7 +53,7 @@ class Server
   end
 
   def parse_request
-    @request_details = parser.parse_request(request_lines)
+    @request_details = Parser.parse_request(request_lines)
   end
 
   def increment_counters
