@@ -1,30 +1,34 @@
-
-
 class PathResponse
-  attr_reader :hello_count
-
-  def initialize
-    @hello_count = 0
+  attr_reader :hello_count, :word
+  
+  def path_finder(path, hello_count, word, generate_diagnostic)
+    @word = word
+    @hello_count = hello_count
+    if path == '/'
+      generate_diagnostic
+    else
+      response_method = path[1..-1].to_sym
+      send(response_method)
+    end
   end
 
-  def hello_response
-    @hello_count += 1
+  def hello
     "Hello, World! (#{hello_count})"
   end
 
-  def datetime_response
+  def datetime
     DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
   end
 
-  def request_response
+  def request
     "Total Requests: #{request_count}"
   end
 
-  def shutdown_response
-    request_response
+  def shutdown
+    request
   end
 
-  def word_response(word)
+  def word_search
     if dictionary.include?(word)
       "#{word} is a known word"
     else

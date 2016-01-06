@@ -14,7 +14,8 @@ class Parser
   end
 
   def word
-    request_lines[0].match(/=\w+/)[0][1..-1]
+    matched = request_lines[0].match(/=\w+/)
+    matched[0][1..-1] if matched
   end
 
   def protocol
