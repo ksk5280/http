@@ -74,43 +74,15 @@ class Server
       "content-length: #{output.length}\r\n\r\n"].join("\r\n")
   end
 
-  # def verb
-  #   request_lines[0].split[0]
-  # end
-
-  # def parser.path
-  #   request_lines[0].split[1]
-  # end
-
-  def protocol
-    request_lines[0].split[2]
-  end
-
-  def host
-    request_lines.find { |line| line.start_with?('Host') }.split[1].split(':')[0]
-  end
-
-  def port
-    request_lines.find { |line| line.start_with?('Host') }.split(":")[2]
-  end
-
-  def origin
-    host
-  end
-
-  def accept
-    request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
-  end
-
   def generate_diagnostic
     "<pre>\n" \
     "Verb: #{parser.verb}\n" \
     "Path: #{parser.path}\n" \
-    "Protocol: #{protocol}\n" \
-    "Host: #{host}\n" \
-    "Port: #{port}\n" \
-    "Origin: #{origin}\n" \
-    "Accept: #{accept}\n" \
+    "Protocol: #{parser.protocol}\n" \
+    "Host: #{parser.host}\n" \
+    "Port: #{parser.port}\n" \
+    "Origin: #{parser.origin}\n" \
+    "Accept: #{parser.accept}\n" \
     '</pre>'
   end
 end
