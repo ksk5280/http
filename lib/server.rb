@@ -46,22 +46,35 @@ class Server
   end
 
   def send_response
-    if get_path == '/hello'
-      @hello_count += 1
-      response = "Hello, World! (#{hello_count})"
-    elsif get_path == '/datetime'
-      response = Time.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-    elsif get_path == '/request'
-      response = "Total Requests: #{request_count}"
-    elsif get_path == '/shutdown'
-      response = "Total Requests: #{request_count}"
-    else
-      response = generate_diagnostic
-    end
-
+    response = generate_response
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
+  end
+
+  def generate_response
+    send(response_methods[get_path])
+  end
+
+  def response_methods
+    {'/hello' => :hello_response,
+    '/datetime' => :datetime_response,
+    '/request' => :request_response,
+    '/shutdown' => :request_response,
+    '/' => :get_diagnostics}
+  end
+
+  def hello_response
+    @hello_count += 1
+    "Hello, World! (#{hello_count})"
+  end
+
+  def datetime_response
+    Time.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+  end
+
+  def request_response
+    "Total Requests: #{request_count}"
   end
 
   def shutdown?
@@ -103,7 +116,7 @@ class Server
     request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
   end
 
-  def generate_diagnostic
+  def get_diagnostics
     diagnostic = "<pre>\n"
     diagnostic += "Verb: #{request_details['Verb']}\n"
     diagnostic += "Path: #{request_details['Path']}\n"
@@ -114,7 +127,6 @@ class Server
     diagnostic += "Accept: #{request_details['Accept']}\n"
     diagnostic += '</pre>'
   end
-
 
 end
 
