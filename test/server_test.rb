@@ -1,7 +1,5 @@
 require 'test_helper'
 require 'hurley'
-require 'minitest'
-require 'server'
 require 'pry'
 
 class ServerTest < Minitest::Test
