@@ -5,6 +5,7 @@ require 'pry'
 class Server
   attr_reader :tcp_server,
               :client,
+              :shutdown,
               :request_count,
               :request_lines,
               :request_details,
@@ -14,12 +15,12 @@ class Server
     @tcp_server = TCPServer.new(9292)
     @request_count = 0
     @hello_count = 0
+    @shutdown = false
   end
 
   def run
-    loop do
+    while !shutdown
       accept_request
-      break if get_path == '/shutdown'
     end
   end
 
@@ -30,26 +31,29 @@ class Server
     while line = client.gets and !line.chomp.empty?
       request_lines << line.chomp
     end
-    @request_count += 1
 
     puts "Got this request:"
     puts request_lines.inspect
 
     parse_request
     send_response
+
+    @request_count += 1 unless request_details['Path'] == '/favicon.ico'
+
     client.close
   end
 
   def send_response
+    path = request_details['Path']
 
-    if get_path == '/hello'
+    if path == '/hello'
       @hello_count += 1
       response = "Hello, World! (#{hello_count})"
-    elsif get_path == '/datetime'
+    elsif path == '/datetime'
       response = DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-    elsif get_path == '/request'
+    elsif path == '/request'
       response = "Total Requests: #{request_count}"
-    elsif get_path == '/shutdown'
+    elsif path == '/shutdown'
       response = "Total Requests: #{request_count}"
     else
       response = generate_diagnostic
@@ -58,10 +62,6 @@ class Server
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
-  end
-
-  def get_path
-    request_lines[0].split[1]
   end
 
   def headers(output)
@@ -81,6 +81,7 @@ class Server
     request_details["Port"] = get_port
     request_details["Origin"] = get_host
     request_details["Accept"] = get_accept
+    @shutdown = request_details['Path'] == '/shutdown'
   end
 
   def get_host
