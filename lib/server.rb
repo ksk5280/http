@@ -16,6 +16,13 @@ class Server
     @hello_count = 0
   end
 
+  def run
+    loop do
+      accept_request
+      break if get_path == '/shutdown'
+    end
+  end
+
   def accept_request
     @client = tcp_server.accept
     puts "Ready for a request"
@@ -38,6 +45,12 @@ class Server
     if get_path == '/hello'
       @hello_count += 1
       response = "Hello, World! (#{hello_count})"
+    elsif get_path == '/datetime'
+      response = DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+    elsif get_path == '/request'
+      response = "Total Requests: #{request_count}"
+    elsif get_path == '/shutdown'
+      response = "Total Requests: #{request_count}"
     else
       response = generate_diagnostic
     end
@@ -97,8 +110,5 @@ end
 
 if __FILE__ == $0
   serve = Server.new
-  loop do
-    serve.accept_request
-  end
-
+  serve.run
 end

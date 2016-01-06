@@ -43,11 +43,28 @@ class ServerTest < Minitest::Test
     assert_equal hw_string, response.body
 
     response = hclient.get("/")
-    
+
     hw_num += 1
     hw_string = "<http><head></head><body>Hello, World! (#{hw_num})</body></html>"
     response = hclient.get("/hello")
     assert_equal hw_string, response.body
+  end
+
+  def test_returns_datetime_in_correct_format
+    response = hclient.get("/datetime")
+
+    d = "<http><head></head><body>#{DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')}</body></html>"
+
+    assert_equal d, response.body
+  end
+
+  def test_shutdown_return_total_number_of_requests_and_closes_server
+    response = hclient.get('/request')
+    req_num = response.body[/\d+/].to_i
+    req_string = "<http><head></head><body>Total Requests: #{req_num + 1}</body></html>"
+    response = hclient.get("/shutdown")
+    assert_equal req_string, response.body
+    # refute response.success?
   end
 
 end
