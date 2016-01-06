@@ -29,7 +29,8 @@ class Server
     @request_count += 1
     print_raw_request
     parse_request
-    send_response
+    response = generate_response
+    send_response(response)
     client.close
   end
 
@@ -45,8 +46,7 @@ class Server
     puts request_lines.inspect
   end
 
-  def send_response
-    response = generate_response
+  def send_response(response)
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
