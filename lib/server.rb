@@ -36,7 +36,7 @@ class Server
     print_request
     send_response
     increment_counters
-    @shutdown = path == '/shutdown'
+    set_shutdown
     client.close
   end
 
@@ -59,10 +59,18 @@ class Server
   end
 
   def send_response
-    response = path_response.path_finder(path, hello_count, parser.word, generate_diagnostic)
+    server_data = {request_count: request_count,
+                   hello_count: hello_count,
+                   word: parser.word,
+                   diagnostics: generate_diagnostic}
+    response = path_response.path_finder(path, server_data)
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
+  end
+
+  def set_shutdown
+    @shutdown = path == '/shutdown'
   end
 
   def path
