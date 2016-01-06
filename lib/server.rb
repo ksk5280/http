@@ -28,22 +28,30 @@ class Server
 
   def accept_request
     @client = tcp_server.accept
-    puts "Ready for a request"
-    @request_lines = []
-    while line = client.gets and !line.chomp.empty?
-      request_lines << line.chomp
-    end
+
+    get_request_lines
 
     parser.set_request(request_lines)
-
-    puts "Got this request:"
-    puts request_lines.inspect
+    print_request
 
     send_response
 
     @request_count += 1 unless parser.path == '/favicon.ico'
 
     client.close
+  end
+
+  def get_request_lines
+    puts "Ready for a request"
+    @request_lines = []
+    while line = client.gets and !line.chomp.empty?
+      request_lines << line.chomp
+    end
+  end
+
+  def print_request
+    puts "Got this request:"
+    puts request_lines.inspect
   end
 
   def send_response
@@ -75,15 +83,7 @@ class Server
   end
 
   def generate_diagnostic
-    "<pre>\n" \
-    "Verb: #{parser.verb}\n" \
-    "Path: #{parser.path}\n" \
-    "Protocol: #{parser.protocol}\n" \
-    "Host: #{parser.host}\n" \
-    "Port: #{parser.port}\n" \
-    "Origin: #{parser.origin}\n" \
-    "Accept: #{parser.accept}\n" \
-    '</pre>'
+    parser.generate_diagnostic
   end
 end
 
