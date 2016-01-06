@@ -1,3 +1,5 @@
+
+require_relative 'parser'
 require 'socket'
 require 'pry'
 
@@ -7,10 +9,12 @@ class Server
               :request_count,
               :request_lines,
               :request_details,
-              :hello_count
+              :hello_count,
+              :parser
 
   def initialize
     @tcp_server = TCPServer.new(9292)
+    @parser = Parser.new
     @request_count = 0
     @hello_count = 0
   end
@@ -94,26 +98,7 @@ class Server
   end
 
   def parse_request
-    @request_details = {}
-    request_details["Verb"] = request_lines[0].split[0]
-    request_details["Path"] = request_lines[0].split[1]
-    request_details["Protocol"] = request_lines[0].split[2]
-    request_details["Host"] = get_host
-    request_details["Port"] = get_port
-    request_details["Origin"] = get_host
-    request_details["Accept"] = get_accept
-  end
-
-  def get_host
-    request_lines.find { |line| line.start_with?('Host') }.split[1].split(':')[0]
-  end
-
-  def get_port
-    request_lines.find { |line| line.start_with?('Host') }.split(":")[2]
-  end
-
-  def get_accept
-    request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
+    @request_details = parser.parse_request(request_lines)
   end
 
   def get_diagnostics
