@@ -58,13 +58,14 @@ class ServerTest < Minitest::Test
     assert_equal d, response.body
   end
 
-  def test_shutdown_return_total_number_of_requests_and_closes_server
-    response = hclient.get('/request')
-    req_num = response.body[/\d+/].to_i
-    req_string = "<http><head></head><body>Total Requests: #{req_num + 1}</body></html>"
-    response = hclient.get("/shutdown")
-    assert_equal req_string, response.body
-    # refute response.success?
-  end
+  # def test_shutdown_return_total_number_of_requests_and_closes_server
+  #
+  #   response = hclient.get('/request')
+  #   req_num = response.body[/\d+/].to_i
+  #   req_string = "<http><head></head><body>Total Requests: #{req_num + 1}</body></html>"
+  #   response = hclient.get("/shutdown")
+  #   assert_equal req_string, response.body
+  #   # refute response.success?
+  # end
 
 end

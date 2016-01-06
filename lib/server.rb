@@ -28,16 +28,11 @@ class Server
 
   def accept_request
     @client = tcp_server.accept
-
     get_request_lines
-
     parser.set_request(request_lines)
     print_request
-
     send_response
-
     @request_count += 1 unless parser.path == '/favicon.ico'
-
     client.close
   end
 
@@ -55,23 +50,30 @@ class Server
   end
 
   def send_response
-    if parser.path == '/hello'
-      @hello_count += 1
-      response = "Hello, World! (#{hello_count})"
-    elsif parser.path == '/datetime'
-      response = DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-    elsif parser.path == '/request'
-      response = "Total Requests: #{request_count}"
-    elsif parser.path == '/shutdown'
-      response = "Total Requests: #{request_count}"
-      @shutdown = parser.path == '/shutdown'
-    else
-      response = generate_diagnostic
-    end
-
+    response = path_finder
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
+  end
+
+  def path_finder
+    if path == '/hello'
+      @hello_count += 1
+      "Hello, World! (#{hello_count})"
+    elsif path == '/datetime'
+      DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+    elsif path == '/request'
+      "Total Requests: #{request_count}"
+    elsif path == '/shutdown'
+      @shutdown = path == '/shutdown'
+      "Total Requests: #{request_count}"
+    else
+      generate_diagnostic
+    end
+  end
+
+  def path
+    parser.path
   end
 
   def headers(output)
