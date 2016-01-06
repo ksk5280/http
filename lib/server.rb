@@ -57,25 +57,46 @@ class Server
   end
 
   def path_finder
-    if path == '/hello'
-      @hello_count += 1
-      "Hello, World! (#{hello_count})"
-    elsif path == '/datetime'
-      DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-    elsif path == '/request'
-      "Total Requests: #{request_count}"
-    elsif path == '/shutdown'
-      @shutdown = path == '/shutdown'
-      "Total Requests: #{request_count}"
-    elsif path == '/word_search'
-      word = parser.word
-      if dictionary.include?(word)
-        "#{word} is a known word"
-      else
-        "#{word} is not a known word"
-      end
+    case path
+    when '/hello'
+      hello_response
+    when '/datetime'
+      datetime_response
+    when '/request'
+      request_response
+    when '/shutdown'
+      shutdown_response
+    when '/word_search'
+      word_response
     else
       generate_diagnostic
+    end
+  end
+
+  def hello_response
+    @hello_count += 1
+    "Hello, World! (#{hello_count})"
+  end
+
+  def datetime_response
+    DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+  end
+
+  def request_response
+    "Total Requests: #{request_count}"
+  end
+
+  def shutdown_response
+    @shutdown = path == '/shutdown'
+    request_response
+  end
+
+  def word_response
+    word = parser.word
+    if dictionary.include?(word)
+      "#{word} is a known word"
+    else
+      "#{word} is not a known word"
     end
   end
 
