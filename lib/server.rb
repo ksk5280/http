@@ -1,5 +1,5 @@
-
 require_relative 'parser'
+require_relative 'response_generator'
 require 'socket'
 require 'pry'
 
@@ -10,11 +10,13 @@ class Server
               :request_lines,
               :request_details,
               :hello_count,
-              :parser
+              :parser,
+              :response_gen
 
   def initialize
     @tcp_server = TCPServer.new(9292)
     @parser = Parser.new
+    @response_gen = ResponseGenerator.new
     @request_count = 0
     @hello_count = 0
   end
@@ -30,9 +32,9 @@ class Server
     @client = tcp_server.accept
     puts "Ready for a request"
     load_request_lines
-    @request_count += 1
     print_raw_request
     parse_request
+    increment_counters
     response = generate_response
     send_response(response)
     client.close
@@ -50,43 +52,34 @@ class Server
     puts request_lines.inspect
   end
 
+  def parse_request
+    @request_details = parser.parse_request(request_lines)
+  end
+
+  def increment_counters
+    @request_count += 1
+    @hello_count += 1 if path == '/hello'
+  end
+
+  def generate_response
+    server_data = {hello_count: hello_count,
+                   request_count: request_count,
+                   request_details: request_details}
+    response_gen.generate_response(path,server_data)
+  end
+
   def send_response(response)
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
   end
 
-  def generate_response
-    send(response_methods[get_path])
-  end
-
-  def response_methods
-    {'/hello' => :hello_response,
-    '/datetime' => :datetime_response,
-    '/request' => :request_response,
-    '/shutdown' => :request_response,
-    '/' => :get_diagnostics}
-  end
-
-  def hello_response
-    @hello_count += 1
-    "Hello, World! (#{hello_count})"
-  end
-
-  def datetime_response
-    Time.now.strftime('%I:%M%p on %A, %B %-d, %Y')
-  end
-
-  def request_response
-    "Total Requests: #{request_count}"
-  end
-
   def shutdown?
-    get_path == '/shutdown'
+    path == '/shutdown'
   end
 
-  def get_path
-    request_lines[0].split[1]
+  def path
+    request_details["Path"]
   end
 
   def headers(output)
@@ -95,22 +88,6 @@ class Server
       "server: ruby",
       "content-type: text/html; charset=iso-8859-1",
       "content-length: #{output.length}\r\n\r\n"].join("\r\n")
-  end
-
-  def parse_request
-    @request_details = parser.parse_request(request_lines)
-  end
-
-  def get_diagnostics
-    diagnostic = "<pre>\n"
-    diagnostic += "Verb: #{request_details['Verb']}\n"
-    diagnostic += "Path: #{request_details['Path']}\n"
-    diagnostic += "Protocol: #{request_details['Protocol']}\n"
-    diagnostic += "Host: #{request_details['Host']}\n"
-    diagnostic += "Port: #{request_details['Port']}\n"
-    diagnostic += "Origin: #{request_details['Origin']}\n"
-    diagnostic += "Accept: #{request_details['Accept']}\n"
-    diagnostic += '</pre>'
   end
 
 end
