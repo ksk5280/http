@@ -1,5 +1,4 @@
 require 'socket'
-require 'hurley'
 require 'pry'
 
 class Server
@@ -18,35 +17,39 @@ class Server
 
   def run
     loop do
-      accept_request
+      process_request
       break if get_path == '/shutdown'
     end
   end
 
-  def accept_request
+  def process_request
     @client = tcp_server.accept
     puts "Ready for a request"
-    @request_lines = []
-    while line = client.gets and !line.chomp.empty?
-      request_lines << line.chomp
-    end
+    load_request_lines
     @request_count += 1
-
-    puts "Got this request:"
-    puts request_lines.inspect
-
+    print_raw_request
     parse_request
     send_response
     client.close
   end
 
-  def send_response
+  def load_request_lines
+    @request_lines = []
+    while line = client.gets and !line.chomp.empty?
+      request_lines << line.chomp
+    end
+  end
 
+  def print_raw_request
+    puts "Got this request:"
+    puts request_lines.inspect
+  end
+  def send_response
     if get_path == '/hello'
       @hello_count += 1
       response = "Hello, World! (#{hello_count})"
     elsif get_path == '/datetime'
-      response = DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+      response = Time.now.strftime('%I:%M%p on %A, %B %-d, %Y')
     elsif get_path == '/request'
       response = "Total Requests: #{request_count}"
     elsif get_path == '/shutdown'
@@ -106,6 +109,8 @@ class Server
     diagnostic += "Accept: #{request_details['Accept']}\n"
     diagnostic += '</pre>'
   end
+
+
 end
 
 if __FILE__ == $0
