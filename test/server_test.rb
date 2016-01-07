@@ -70,6 +70,16 @@ class ServerTest < Minitest::Test
     assert_equal "<http><head></head><body>pizz is not a known word</body></html>", response.body
   end
 
+  def test_can_respond_to_start_game
+    response = hclient.post("/start_game")
+    assert_equal "<http><head></head><body>Good luck!</body></html>", response.body
+  end
+
+  def test_we_can_guess_to_game
+    response = hclient.post("/start_game")
+    response = hclient.post("/game", "guess=46")
+    assert_equal "<http><head></head><body>You guessed 46</body></html>", response.body
+  end
   # def test_shutdown_return_total_number_of_requests_and_closes_server
   #
   #   response = hclient.get('/request')

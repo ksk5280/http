@@ -1,8 +1,10 @@
+$LOAD_PATH.unshift(File.expand_path('.',__dir__))
 require 'socket'
 require 'hurley'
 require 'pry'
-require_relative 'parser'
-require_relative 'path_response'
+require 'parser'
+require 'path_response'
+require 'game'
 
 class Server
   attr_reader :tcp_server,
@@ -36,6 +38,7 @@ class Server
     print_request
     increment_counters
     send_response
+    start_game if path == '/start_game'
     set_shutdown
     client.close
   end
@@ -51,6 +54,10 @@ class Server
   def print_request
     puts "Got this request:"
     puts request_lines.inspect
+  end
+
+  def start_game
+    @game = Game.new
   end
 
   def increment_counters

@@ -35,6 +35,14 @@ class PathResponse
     end
   end
 
+  def start_game
+    "Good luck!"
+  end
+
+  def game
+    "You guessed 46"
+  end
+
   def dictionary
     File.read('/usr/share/dict/words').split("\n")
   end
