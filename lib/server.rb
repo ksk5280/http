@@ -14,7 +14,8 @@ class Server
               :hello_count,
               :request_lines,
               :parser,
-              :path_response
+              :path_response,
+              :game
 
   def initialize
     @tcp_server = TCPServer.new(9292)
@@ -35,10 +36,13 @@ class Server
     @client = tcp_server.accept
     get_request_lines
     parser.set_request(request_lines)
+    #puts "waiting on get_body"
+    get_body if path == '/game' && parser.verb == 'POST'
     print_request
     increment_counters
     send_response
     start_game if path == '/start_game'
+    take_guess if path == '/game' && parser.verb == 'POST'
     set_shutdown
     client.close
   end
@@ -51,6 +55,10 @@ class Server
     end
   end
 
+  def get_body
+     puts client.recv(3)
+  end
+
   def print_request
     puts "Got this request:"
     puts request_lines.inspect
@@ -58,6 +66,10 @@ class Server
 
   def start_game
     @game = Game.new
+  end
+
+  def take_guess
+    game.guess(10)
   end
 
   def increment_counters
@@ -69,8 +81,9 @@ class Server
     server_data = {request_count: request_count,
                    hello_count: hello_count,
                    word: parser.word,
-                   diagnostics: generate_diagnostic}
-    response = path_response.path_finder(path, server_data)
+                   diagnostics: generate_diagnostic,
+                   game: game}
+    response = path_response.path_finder(path, parser.verb, server_data)
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output

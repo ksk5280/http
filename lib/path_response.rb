@@ -1,8 +1,9 @@
 class PathResponse
-  attr_reader :data
+  attr_reader :data, :verb
 
-  def path_finder(path, data_in)
+  def path_finder(path, verb, data_in)
     @data = data_in
+    @verb = verb
     if path == '/' || path == '/favicon.ico'
       data[:diagnostics]
     else
@@ -16,7 +17,7 @@ class PathResponse
   end
 
   def datetime
-    DateTime.now.strftime('%I:%M%p on %A, %B %-d, %Y')
+    Time.now.strftime('%I:%M%p on %A, %B %-d, %Y')
   end
 
   def request
@@ -40,7 +41,11 @@ class PathResponse
   end
 
   def game
-    "You guessed 46"
+    if verb == "GET"
+      "Number of guesses= #{data[:game].guess_count}\n" \
+      "Last guess: #{data[:game].last_guess}\n"\
+      "Your guess was #{data[:game].status}"
+    end
   end
 
   def dictionary

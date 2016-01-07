@@ -75,10 +75,28 @@ class ServerTest < Minitest::Test
     assert_equal "<http><head></head><body>Good luck!</body></html>", response.body
   end
 
-  def test_we_can_guess_to_game
+  def test_increments_guess_count_with_a_post
     response = hclient.post("/start_game")
-    response = hclient.post("/game", "guess=46")
-    assert_equal "<http><head></head><body>You guessed 46</body></html>", response.body
+    response = hclient.post("/game","guess=65")
+    response = hclient.get("/game")
+    assert_equal 1, response.body.match(/\d+/)[0].to_i
+    response = hclient.post("/game")
+    response = hclient.get("/game")
+    assert_equal 2, response.body.match(/\d+/)[0].to_i
+  end
+
+  def test_tells_last_guess_and_guess_is_high
+    response = hclient.post("/start_game")
+    response = hclient.post("/game","guess=2000")
+    response = hclient.get("/game")
+    assert_equal "<http><head></head><body>Number of guesses= 1\nLast guess: 2000\nYour guess was too high</body></html>", response.body
+  end
+
+  def test_tells_last_guess_and_guess_is_low
+    response = hclient.post("/start_game")
+    response = hclient.post("/game","guess=-5")
+    response = hclient.get("/game")
+    assert_equal "<http><head></head><body>Number of guesses= 1\nLast guess: -5\nYour guess was too low</body></html>", response.body
   end
   # def test_shutdown_return_total_number_of_requests_and_closes_server
   #
