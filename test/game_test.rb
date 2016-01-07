@@ -27,23 +27,23 @@ class GameTest < Minitest::Test
 
   def test_can_check_if_guess_is_too_high
     g = Game.new(35)
-    guessed, status = g.guess(200)
-    assert_equal 200, guessed
-    assert_equal "high", status
+    g.guess(200)
+    assert_equal 200, g.last_guess
+    assert_equal "too high", g.status
   end
 
   def test_can_check_if_guess_is_too_low
     g = Game.new(35)
-    guessed, status = g.guess(2)
-    assert_equal 2, guessed
-    assert_equal "low", status
+    g.guess(2)
+    assert_equal 2, g.last_guess
+    assert_equal "too low", g.status
   end
 
   def test_can_check_if_guess_is_correct
     g = Game.new(35)
-    guessed, status = g.guess(35)
-    assert_equal 35, guessed
-    assert_equal "correct", status
+    g.guess(35)
+    assert_equal 35, g.last_guess
+    assert_equal "correct", g.status
   end
 
 

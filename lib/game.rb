@@ -1,5 +1,5 @@
 class Game
-  attr_reader :num, :guess_count
+  attr_reader :num, :guess_count, :last_guess, :status
   def initialize(num = rand(1000))
     @num = num
     @guess_count = 0
@@ -7,14 +7,14 @@ class Game
 
   def guess(guessed)
     @guess_count += 1
+    @last_guess = guessed
     if guessed < num
-      status = "low"
+      @status = "too low"
     elsif guessed == num
-      status = "correct"
+      @status = "correct"
     else
-      status = "high"
+      @status = "too high"
     end
-    [guessed, status]
   end
 
 end
