@@ -36,6 +36,11 @@ class ServerTest < Minitest::Test
     assert_equal "<http><head></head><body><pre>\nVerb: GET\nPath: /\nProtocol: HTTP/1.1\nHost: 127.0.0.1\nPort: 9292\nOrigin: 127.0.0.1\nAccept: */*\n</pre></body></html>", response.body
   end
 
+  def test_can_send_a_unknown_path
+    response = hclient.get('/omglol')
+    assert_equal "<http><head></head><body><pre>\nVerb: GET\nPath: /omglol\nProtocol: HTTP/1.1\nHost: 127.0.0.1\nPort: 9292\nOrigin: 127.0.0.1\nAccept: */*\n</pre></body></html>", response.body
+  end
+
   def test_hello_world_only_increments_on_hello_call
     response = hclient.get("/hello")
     hw_num = response.body[/\d+/].to_i
@@ -94,6 +99,7 @@ class ServerTest < Minitest::Test
     response = hclient.post("/game",guess: -5)
     assert_equal "<http><head></head><body>Number of guesses = 1\nLast guess: -5\nYour guess was too low</body></html>", response.body
   end
+
 
   # def test_shutdown_return_total_number_of_requests_and_closes_server
   #

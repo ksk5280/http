@@ -4,11 +4,11 @@ class PathResponse
   def path_finder(path, verb, data_in)
     @data = data_in
     @verb = verb
-    if path == '/' || path == '/favicon.ico'
-      data[:diagnostics]
-    else
-      response_method = path[1..-1].to_sym
+    response_method = path.delete('/').to_sym
+    if respond_to?(response_method)
       send(response_method)
+    else
+      data[:diagnostics]
     end
   end
 
@@ -46,8 +46,6 @@ class PathResponse
       "Last guess: #{data[:game].last_guess}\n"\
       "Your guess was #{data[:game].status}" #\
       #"The actual number is #{data[:game].num}"
-    elsif verb == "POST"
-      "Received guess of #{data[:game].last_guess}\n"
     end
   end
 

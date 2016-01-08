@@ -36,8 +36,7 @@ class Server
     @client = tcp_server.accept
     handle_request
     increment_counters
-    start_game if path == '/start_game'
-    take_guess if path == '/game' && parser.verb == 'POST'
+    play_game
     send_response
     set_shutdown
     client.close
@@ -50,9 +49,13 @@ class Server
     read_body
   end
 
+  def play_game
+    start_game if path == '/start_game'
+    take_guess if path == '/game' && verb == 'POST'
+  end
+
   def get_request_lines
     puts "Ready for a request"
-
     @request_lines = []
     while line = client.gets and !line.chomp.empty?
       request_lines << line.chomp
@@ -60,7 +63,7 @@ class Server
   end
 
   def read_body
-    if parser.content_length > 0 && parser.verb == "POST"
+    if parser.content_length > 0 && verb == "POST"
       @request_lines << client.read(parser.content_length)
       parser.set_request(request_lines)
     end
@@ -90,7 +93,7 @@ class Server
                    word: parser.word,
                    diagnostics: generate_diagnostic,
                    game: game}
-    path_response.path_finder(path, parser.verb, server_data)
+    path_response.path_finder(path, verb, server_data)
   end
 
   def send_response
@@ -108,17 +111,23 @@ class Server
     parser.path
   end
 
+  def verb
+    parser.verb
+  end
+
   def headers(output)
     heads = ["http/1.1 200 ok",
       "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
       "server: ruby",
       "content-type: text/html; charset=iso-8859-1",
       "content-length: #{output.length}\r\n\r\n"]
-    if parser.verb == 'POST' && path == "/game"
-      heads[0] = "http/1.1 301 Moved Permanently"
-      heads.insert(1, "Location: http://127.0.0.1:9292/game")
-    end
+    heads = change_game_header(heads) if verb == 'POST' && path == "/game"
     heads.join("\r\n")
+  end
+
+  def change_game_header(heads)
+    heads[0] = "http/1.1 301 Moved Permanently"
+    heads.insert(1, "Location: http://127.0.0.1:9292/game")
   end
 
   def generate_diagnostic
