@@ -42,9 +42,12 @@ class PathResponse
 
   def game
     if verb == "GET"
-      "Number of guesses= #{data[:game].guess_count}\n" \
+      "Number of guesses = #{data[:game].guess_count}\n" \
       "Last guess: #{data[:game].last_guess}\n"\
-      "Your guess was #{data[:game].status}"
+      "Your guess was #{data[:game].status}" #\
+      #"The actual number is #{data[:game].num}"
+    elsif verb == "POST"
+      "Received guess of #{data[:game].last_guess}\n"
     end
   end
 

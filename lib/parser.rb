@@ -14,8 +14,8 @@ class Parser
   end
 
   def word
-    matched = request_lines[0].match(/=\w+/)
-    matched[0][1..-1] if matched
+    matched = request_lines[0].scan(/(?<=\=)\w+/)
+    matched[0] if matched
   end
 
   def protocol
@@ -36,6 +36,26 @@ class Parser
 
   def accept
     request_lines.find { |line| line.start_with?('Accept:') }[8..-1]
+  end
+
+  def body
+    request_lines[-1]
+  end
+
+  def guess
+    guess_in = body.scan(/(?<=guess\=)-*\d+/)
+    if !guess_in.empty?
+      guess_in[0].to_i
+    end
+  end
+
+  def content_length
+    cl_field = request_lines.find { |line| line.start_with?('Content-Length') }
+    if cl_field
+      cl_field.split[1].to_i
+    else
+      0
+    end
   end
 
   def generate_diagnostic

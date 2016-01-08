@@ -34,29 +34,36 @@ class Server
 
   def accept_request
     @client = tcp_server.accept
-    get_request_lines
-    parser.set_request(request_lines)
-    #puts "waiting on get_body"
-    get_body if path == '/game' && parser.verb == 'POST'
-    print_request
+    handle_request
     increment_counters
-    send_response
     start_game if path == '/start_game'
     take_guess if path == '/game' && parser.verb == 'POST'
+    send_response
     set_shutdown
     client.close
   end
 
+  def handle_request
+    get_request_lines
+    parser.set_request(request_lines)
+    print_request
+    read_body
+  end
+
   def get_request_lines
     puts "Ready for a request"
+
     @request_lines = []
     while line = client.gets and !line.chomp.empty?
       request_lines << line.chomp
     end
   end
 
-  def get_body
-     puts client.recv(3)
+  def read_body
+    if parser.content_length > 0 && parser.verb == "POST"
+      @request_lines << client.read(parser.content_length)
+      parser.set_request(request_lines)
+    end
   end
 
   def print_request
@@ -69,7 +76,7 @@ class Server
   end
 
   def take_guess
-    game.guess(10)
+    game.guess(parser.guess)
   end
 
   def increment_counters
@@ -77,13 +84,17 @@ class Server
     @hello_count += 1 if path == '/hello'
   end
 
-  def send_response
+  def generate_response
     server_data = {request_count: request_count,
                    hello_count: hello_count,
                    word: parser.word,
                    diagnostics: generate_diagnostic,
                    game: game}
-    response = path_response.path_finder(path, parser.verb, server_data)
+    path_response.path_finder(path, parser.verb, server_data)
+  end
+
+  def send_response
+    response = generate_response
     output = "<http><head></head><body>#{response}</body></html>"
     client.puts headers(output)
     client.puts output
@@ -98,16 +109,22 @@ class Server
   end
 
   def headers(output)
-    ["http/1.1 200 ok",
+    heads = ["http/1.1 200 ok",
       "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
       "server: ruby",
       "content-type: text/html; charset=iso-8859-1",
-      "content-length: #{output.length}\r\n\r\n"].join("\r\n")
+      "content-length: #{output.length}\r\n\r\n"]
+    if parser.verb == 'POST' && path == "/game"
+      heads[0] = "http/1.1 301 Moved Permanently"
+      heads.insert(1, "Location: http://127.0.0.1:9292/game")
+    end
+    heads.join("\r\n")
   end
 
   def generate_diagnostic
     parser.generate_diagnostic
   end
+
 end
 
 if __FILE__ == $0
