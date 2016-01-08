@@ -11,7 +11,7 @@ class Game
     if guessed < num
       @status = "too low"
     elsif guessed == num
-      @status = "correct"
+      @status = "correct!@!!$&&!@ OMG!!! lol :)"
     else
       @status = "too high"
     end

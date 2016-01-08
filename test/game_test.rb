@@ -43,7 +43,7 @@ class GameTest < Minitest::Test
     g = Game.new(35)
     g.guess(35)
     assert_equal 35, g.last_guess
-    assert_equal "correct", g.status
+    assert_equal "correct!@!!$&&!@ OMG!!! lol :)", g.status
   end
 
 
