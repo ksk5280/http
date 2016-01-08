@@ -10,6 +10,54 @@ class ParserTest < Minitest::Test
     assert_equal "/", parser.path
   end
 
+  def test_can_parse_verb
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "GET", parser.verb
+  end
+
+  def test_can_parse_protocol
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "HTTP/1.1", parser.protocol
+  end
+
+  def test_can_parse_host
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "127.0.0.1", parser.host
+  end
+
+  def test_can_parse_port
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "9292", parser.port
+  end
+
+  def test_can_parse_origin
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "127.0.0.1", parser.origin
+  end
+
+  def test_can_parse_accept
+    parser = Parser.new
+    request = ["GET / HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
+
+    parser.set_request(request)
+    assert_equal "*/*", parser.accept
+  end
+
   def test_can_parse_word_search_with_parameters
     parser = Parser.new
     request = ["GET /word_search?word=hello&word2=world HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292"]
@@ -38,7 +86,7 @@ class ParserTest < Minitest::Test
     assert_equal "This is my body", parser.body
   end
 
-  def test_can_parse_a_guess_the_body_of_a_post
+  def test_can_parse_a_guess_in_the_body_of_a_post
     parser = Parser.new
     request = ["Post /game HTTP/1.1", "User-Agent: Hurley v0.2", "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3", "Accept: */*", "Connection: close", "Host: 127.0.0.1:9292", "", "guess=35"]
     parser.set_request(request)
