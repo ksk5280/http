@@ -133,7 +133,6 @@ class Server
   def generate_diagnostic
     parser.generate_diagnostic
   end
-
 end
 
 if __FILE__ == $0

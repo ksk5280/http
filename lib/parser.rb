@@ -69,6 +69,4 @@ class Parser
     "Accept: #{accept}\n" \
     '</pre>'
   end
-
-
 end

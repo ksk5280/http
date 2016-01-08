@@ -45,5 +45,4 @@ class GameTest < Minitest::Test
     assert_equal 35, g.last_guess
     assert_equal "correct!@!!$&&!@ OMG!!! lol :)", g.status
   end
-
 end
